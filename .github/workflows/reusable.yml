@@ -1,0 +1,29 @@
+name: Reusable Workflow
+
+on:
+  workflow_call:
+    inputs:
+      message:
+        description: Message to echo
+        required: false
+        default: "Hello from reusable workflow"
+        type: string
+    outputs:
+      result:
+        description: The echoed message
+        value: ${{ jobs.nested-job.outputs.result }}
+
+jobs:
+  nested-job:
+    name: Nested Job
+    runs-on: ubuntu-latest
+    container: alpine:3.19
+    permissions: {}
+    outputs:
+      result: ${{ steps.echo.outputs.result }}
+    steps:
+      - name: Echo message
+        id: echo
+        run: |
+          echo "result=${{ inputs.message }}" >> "$GITHUB_OUTPUT"
+          echo "${{ inputs.message }}"

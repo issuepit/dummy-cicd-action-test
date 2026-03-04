@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+    inputs:
+      greeting:
+        description: Custom greeting message
+        required: false
+        default: Hello
+
+permissions:
+  contents: read
+
+jobs:
+  matrix-build:
+    name: Build (version ${{ matrix.version }})
+    runs-on: ubuntu-latest
+    container: alpine:3.19
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["1", "2"]
+    steps:
+      - name: Create dummy artifacts
+        run: |
+          mkdir -p dist
+          echo "version=${{ matrix.version }}" > dist/output-${{ matrix.version }}.txt
+          echo "sha=${{ github.sha }}" >> dist/output-${{ matrix.version }}.txt
+          cat dist/output-${{ matrix.version }}.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-v${{ matrix.version }}
+          path: dist/
+          retention-days: 1
+
+  call-nested:
+    name: Call Nested Workflow
+    needs: matrix-build
+    uses: ./.github/workflows/reusable.yml
+    with:
+      message: "${{ inputs.greeting || 'Hello from CI' }} — run ${{ github.run_number }}"
