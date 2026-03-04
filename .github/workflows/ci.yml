@@ -17,32 +17,25 @@ permissions:
 
 jobs:
   matrix-build:
-    name: Build (${{ matrix.os }}, node ${{ matrix.node }})
-    runs-on: ${{ matrix.os }}
+    name: Build (version ${{ matrix.version }})
+    runs-on: ubuntu-latest
+    container: alpine:3.19
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
-        node: ["18", "20"]
+        version: ["1", "2"]
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Node.js ${{ matrix.node }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
-
-      - name: Build dummy artifact
+      - name: Create dummy artifacts
         run: |
           mkdir -p dist
-          echo "build=${{ matrix.os }}-node${{ matrix.node }}" > dist/build-info.txt
-          echo "sha=${{ github.sha }}" >> dist/build-info.txt
-          cat dist/build-info.txt
+          echo "version=${{ matrix.version }}" > dist/output-${{ matrix.version }}.txt
+          echo "sha=${{ github.sha }}" >> dist/output-${{ matrix.version }}.txt
+          cat dist/output-${{ matrix.version }}.txt
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.os }}-node${{ matrix.node }}
+          name: build-v${{ matrix.version }}
           path: dist/
           retention-days: 1
 
