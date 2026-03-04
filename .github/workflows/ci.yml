@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+    inputs:
+      greeting:
+        description: Custom greeting message
+        required: false
+        default: Hello
+
+permissions:
+  contents: read
+
+jobs:
+  matrix-build:
+    name: Build (${{ matrix.os }}, node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node: ["18", "20"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Build dummy artifact
+        run: |
+          mkdir -p dist
+          echo "build=${{ matrix.os }}-node${{ matrix.node }}" > dist/build-info.txt
+          echo "sha=${{ github.sha }}" >> dist/build-info.txt
+          cat dist/build-info.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.os }}-node${{ matrix.node }}
+          path: dist/
+          retention-days: 1
+
+  call-nested:
+    name: Call Nested Workflow
+    needs: matrix-build
+    uses: ./.github/workflows/reusable.yml
+    with:
+      message: "${{ inputs.greeting || 'Hello from CI' }} — run ${{ github.run_number }}"
