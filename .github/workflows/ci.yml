@@ -19,7 +19,7 @@ jobs:
   matrix-build:
     name: Build (version ${{ matrix.version }})
     runs-on: ubuntu-latest
-    container: alpine:3.19
+    container: node:lts-alpine
     strategy:
       fail-fast: false
       matrix:
