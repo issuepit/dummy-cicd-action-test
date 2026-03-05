@@ -45,3 +45,13 @@ jobs:
     uses: ./.github/workflows/reusable.yml
     with:
       message: "${{ inputs.greeting || 'Hello from CI' }} — run ${{ github.run_number }}"
+
+  post-nested:
+    name: Post Nested
+    needs: call-nested
+    runs-on: ubuntu-latest
+    container: node:lts-alpine
+    permissions: {}
+    steps:
+      - name: Print nested result
+        run: echo "Nested workflow completed with result: ${{ needs.call-nested.outputs.result }}"
