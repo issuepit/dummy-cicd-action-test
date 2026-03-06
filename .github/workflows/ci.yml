@@ -54,4 +54,5 @@ jobs:
     permissions: {}
     steps:
       - name: Print nested result
-        run: echo "Nested workflow completed with result: ${{ needs.call-nested.outputs.result }}"
+        run: |
+          echo "Nested workflow completed with result: ${{ needs.call-nested.outputs.result }}"
